@@ -17,11 +17,18 @@ class Boat():
 
         # init position in real world coordinates
 
-    def update_position(self, dt):
+    def go_foward(self):
 
         # update position according to transition dynamics
-        self.x += dt
-        self.y += dt
+        self.x += 3
+        self.y += 0
+
+
+    def go_backward(self):
+
+        # update position according to transition dynamics
+        self.x -= 3
+        self.y += 0
 
 
     def rotate_left(self):
@@ -37,6 +44,10 @@ class Boat():
             self.rotate_left()
         if symbol == key.RIGHT:
             self.rotate_right()
+        if symbol == key.UP:
+            self.go_foward()
+        if symbol == key.DOWN:
+            self.go_backward()
 
 
     def get_pixel_coordinates(self):
