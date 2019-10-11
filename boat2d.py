@@ -2,10 +2,13 @@ import pyglet
 from pyglet.window import key
 from pyglet.window import FPSDisplay
 from boat import Boat
+import math
+from physics import *
+
 
 # init visualization stuff
-window = pyglet.window.Window(width=420, height=420, caption="Boat", resizable=False)
-window.set_location(400, 100)
+window = pyglet.window.Window(width=1024, height=1024, caption="Boat", resizable=False)
+window.set_location(100, 100)
 fps_display = FPSDisplay(window)
 fps_display.label.font_size = 50
 
@@ -18,14 +21,13 @@ pressed_keys = []
 # initialize stuff
 
 # background
-water_bg = pyglet.image.load('res/water.png')
-height, width = 840, 840
-
-water_bg.scale = 2
-water_bg.width = width
-water_bg.height = height
+water_bg = pyglet.image.load('res/water.jpg')
+water_splash = pyglet.image.load('res/water_splash.png')
 
 water_bg = pyglet.sprite.Sprite(water_bg, x=0, y=0)
+
+water_splash_acc = pyglet.sprite.Sprite(water_splash, x=0, y=0)
+
 
 # boat stuff
 center = [100, 50]
@@ -38,7 +40,23 @@ boat = Boat(x=100,
 
 
 # draw boat
+def draw_boat():
 
+    pyglet.graphics.draw_indexed(4, pyglet.gl.GL_QUADS,
+                                 [0, 1, 2, 3],
+                                 ('v2i', boat.get_coordinates()[0:8]),
+                                 ('c3B', (0, 0, 255,
+                                          0, 255, 0,
+                                          0, 255, 0,
+                                          0, 0, 255)))
+
+    # update splash positions
+    water_splash_acc.update(x=boat.get_coordinates()[8],
+                            y=boat.get_coordinates()[9],
+                            rotation=round(-(boat.phi*360+90)/(2*math.pi)))
+
+    # if boat.is_accelerating:
+    #     water_splash_acc.draw()
 
 
 @window.event
@@ -53,17 +71,8 @@ def on_draw():
     for symbol in pressed_keys:
         boat.control(symbol)
 
-    # update ship motion according to physics model
-    boat.motion_dynamics()
-
-    # draw ship
-    pyglet.graphics.draw_indexed(4, pyglet.gl.GL_QUADS,
-                                 [0, 1, 2, 3],
-                                 ('v2i', boat.get_coordinates()),
-                                 ('c3B', (0, 0, 255,
-                                          0, 255, 0,
-                                          0, 255, 0,
-                                          0, 0, 255)))
+    # draw boat
+    draw_boat()
 
 
 
@@ -78,10 +87,18 @@ def on_key_release(symbol, modifiers):
 
 
 def update(dt):
+
+    # update ship motion according to physics model
+    boat.motion_dynamics()
+
     return
 
 
 if __name__ == '__main__':
 
-    pyglet.clock.schedule_interval(update, 1.0/60)
+    print('Starting simulation! Good luck, captain!\n\n\n\n')
+    print('Conditions: \nwind vector: {}\ncurrent vector: {}\n\n\n'.format(wind_velocity_vector, water_current_vector))
+
+    dt = 1.0/60
+    pyglet.clock.schedule_interval(update, dt)
     pyglet.app.run()
